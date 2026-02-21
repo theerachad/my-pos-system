@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART POS - VibeStore (Profit & Loss)</title>
+    <title>ระบบร้านค้า - VibeStore (Profit & Loss)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -49,9 +49,9 @@
         </div>
 
         <nav class="p-6 space-y-2 flex-1">
-            <div onclick="showPage('home')" id="nav-home" class="nav-btn active">🏠 หน้าหลัก (สินค้า)</div>
-            <div onclick="showPage('pos')" id="nav-pos" class="nav-btn">💳 จุดรับชำระเงิน</div>
-            <div onclick="showPage('stock')" id="nav-stock" class="nav-btn admin-only">📦 คลังสินค้า & รายจ่าย</div>
+            <div onclick="showPage('home')" id="nav-home" class="nav-btn active">🏠 เมนู (สินค้า)</div>
+            <div onclick="showPage('pos')" id="nav-pos" class="nav-btn">💳 ชำระเงิน</div>
+            <div onclick="showPage('stock')" id="nav-stock" class="nav-btn admin-only">📦 เพิ่มเมนู </div>
             <div onclick="showPage('reports')" id="nav-reports" class="nav-btn admin-only">📊 รายงานยอดขาย & กำไร</div>
         </nav>
 
@@ -67,7 +67,7 @@
         
         <section id="page-home" class="page-content active-page">
             <header class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">🏠 หน้าหลัก</h2>
+                <h2 class="text-3xl font-bold text-slate-800">🏠 เมนู </h2>
                 <p class="text-slate-500">เลือกสินค้าเพื่อเพิ่มลงตะกร้า (สัญลักษณ์เลขแดงแสดงจำนวนในตะกร้า)</p>
             </header>
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6" id="products-grid"></div>
@@ -75,7 +75,7 @@
 
         <section id="page-pos" class="page-content">
             <header class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">💳 จุดรับชำระเงิน</h2>
+                <h2 class="text-3xl font-bold text-slate-800">💳 ชำระเงิน</h2>
             </header>
             <div class="flex flex-col lg:flex-row gap-8">
                 <div class="flex-1 glass-card p-8">
@@ -263,7 +263,7 @@
         let chartPie = null;
         let reportPeriod = 'day';
         
-        const ADMIN_PIN = "1234";
+        const ADMIN_PIN = "4328";
 
         function showPage(id) {
             if ((id === 'stock' || id === 'reports') && !isAdmin) {
@@ -654,3 +654,4 @@
 </body>
 
 </html>
+
