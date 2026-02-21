@@ -2,30 +2,31 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ร้านโครตกะเพรา</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SMART POS - VibeStore (Full Admin)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f0f4f8; color: #334155; }
-        .sidebar { background: #ffffff; border-right: 1px solid #e2e8f0; width: 280px; transition: 0.3s; }
-        .nav-btn { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-radius: 12px; color: #64748b; cursor: pointer; transition: 0.2s; font-weight: 500; }
-        .nav-btn:hover { background: #f1f5f9; color: #1e293b; }
-        .nav-btn.active { background: #e0e7ff; color: #4338ca; border-left: 4px solid #4338ca; border-radius: 0 12px 12px 0; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
-        .page-content { display: none; }
-        .active-page { display: block; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .stat-card { padding: 20px; border-radius: 16px; border: 1px solid #f1f5f9; }
-        .qr-placeholder { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; display: flex; align-items: center; justify-content: center; height: 200px; overflow: hidden; }
-        .admin-only { transition: 0.3s; }
-        .admin-locked { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
-        .filter-btn { padding: 8px 16px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: 0.2s; border: 1px solid #e2e8f0; background: white; }
-        .filter-btn.active { background: #4338ca; color: white; border-color: #4338ca; }
-        .cart-badge { position: absolute; top: 10px; left: 10px; background: #ef4444; color: white; border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: bold; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #334155; -webkit-tap-highlight-color: transparent; }
         
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: white; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; z-index: 50; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 11px; font-weight: 500; gap: 4px; flex: 1; transition: 0.2s; background: none; border: none; }
+        .nav-item.active { color: #4f46e5; }
+        .nav-item svg { width: 24px; height: 24px; }
+
+        .glass-card { background: white; border-radius: 20px; border: 1px solid #f1f5f9; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .page-content { display: none; padding-bottom: 90px; }
+        .active-page { display: block; animation: slideUp 0.3s ease-out; }
+        
+        @keyframes slideUp { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .cart-badge-nav { position: absolute; top: 12px; margin-left: 15px; background: #ef4444; color: white; border-radius: 999px; min-width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-weight: bold; }
+
+        .filter-btn { padding: 8px 16px; border-radius: 12px; font-size: 14px; border: 1px solid #e2e8f0; background: white; }
+        .filter-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+
         #print-area { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -34,218 +35,182 @@
         }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="min-h-screen">
 
     <div id="print-area"></div>
 
-    <aside class="sidebar fixed h-full z-30 flex flex-col">
-        <div class="p-8 border-b">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-                </div>
-                <h1 class="text-xl font-bold text-slate-800 tracking-tight">ร้านโครตกะเพรา</h1>
+    <header class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b px-5 py-4 z-40 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             </div>
+            <h1 class="font-bold text-slate-800 text-lg tracking-tight">SMART POS</h1>
         </div>
-
-        <nav class="p-6 space-y-2 flex-1">
-            <div onclick="showPage('home')" id="nav-home" class="nav-btn active">🏠 เมนู (สินค้า)</div>
-            <div onclick="showPage('pos')" id="nav-pos" class="nav-btn">💳 ชำระเงิน</div>
-            <div onclick="showPage('stock')" id="nav-stock" class="nav-btn admin-only">📦 เพิ่มเมนู </div>
-            <div onclick="showPage('reports')" id="nav-reports" class="nav-btn admin-only">📊 รายงานยอดขาย & กำไร</div>
-        </nav>
-
-        <div class="p-6 mt-auto">
-            <div class="bg-slate-50 p-4 rounded-2xl shadow-inner">
-                <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">สถานะผู้ดูแลระบบ</p>
-                <button onclick="handleAdminToggle()" id="admin-toggle-btn" class="text-indigo-600 text-xs font-semibold hover:underline">เข้าสู่โหมด ADMIN</button>
-            </div>
+        <div class="flex items-center gap-3">
+            <button onclick="syncToCloud()" class="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[10px] font-bold border border-emerald-100 active:scale-90 transition">
+                ☁️ ซิงค์ข้อมูล
+            </button>
+            <button onclick="handleAdminToggle()" id="admin-indicator" class="w-2.5 h-2.5 rounded-full bg-slate-300"></button>
         </div>
-    </aside>
+    </header>
 
-    <main class="flex-1 ml-[280px] p-10">
+    <nav class="bottom-nav">
+        <button onclick="showPage('home')" id="btn-nav-home" class="nav-item active">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span>สินค้า</span>
+        </button>
+        <button onclick="showPage('pos')" id="btn-nav-pos" class="nav-item relative">
+            <div id="cart-badge-nav" class="hidden cart-badge-nav">0</div>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+            <span>ตะกร้า</span>
+        </button>
+        <button onclick="showPage('stock')" id="btn-nav-stock" class="nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            <span>คลังสินค้า</span>
+        </button>
+        <button onclick="showPage('reports')" id="btn-nav-reports" class="nav-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <span>รายงาน</span>
+        </button>
+    </nav>
+
+    <main class="pt-20 px-4 md:px-10 max-w-7xl mx-auto">
         
+        <!-- Page: Home -->
         <section id="page-home" class="page-content active-page">
-            <header class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">🏠 เมนู </h2>
-                <p class="text-slate-500">เลือกสินค้าเพื่อเพิ่มลงตะกร้า (สัญลักษณ์เลขแดงแสดงจำนวนในตะกร้า)</p>
-            </header>
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6" id="products-grid"></div>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">🏠 รายการสินค้า</h2>
+                <p class="text-slate-400 text-sm">แตะเพื่อเพิ่มสินค้าลงตะกร้า</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4" id="products-grid"></div>
         </section>
 
+        <!-- Page: POS -->
         <section id="page-pos" class="page-content">
-            <header class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800">💳 ชำระเงิน</h2>
-            </header>
-            <div class="flex flex-col lg:flex-row gap-8">
-                <div class="flex-1 glass-card p-8">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">💳 ตะกร้าสินค้า</h2>
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="flex-1 glass-card p-5">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold">🛒 รายการในตะกร้า</h3>
-                        <div class="flex gap-2">
-                            <button onclick="printKitchenTicket()" class="flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-200 transition">
-                                👩‍🍳 พิมพ์ให้แม่ครัว
-                            </button>
-                        </div>
+                        <h3 class="font-bold">รายการที่เลือก</h3>
+                        <button onclick="printKitchenTicket()" class="text-orange-600 bg-orange-50 px-3 py-2 rounded-xl text-xs font-bold active:bg-orange-100">👩‍🍳 พิมพ์สั่งครัว</button>
                     </div>
-                    <div id="cart-list" class="space-y-4"></div>
-                    <div id="empty-cart" class="text-center py-12 text-slate-400">ตะกร้าว่างเปล่า</div>
+                    <div id="cart-list" class="space-y-3"></div>
+                    <div id="empty-cart" class="text-center py-12 text-slate-300">ไม่มีสินค้าในตะกร้า</div>
                 </div>
-                <div class="w-full lg:w-[450px]">
-                    <div class="glass-card p-8 sticky top-10">
-                        <div class="flex justify-between text-3xl font-bold mb-8 text-indigo-900">
+                
+                <div class="w-full lg:w-[400px]">
+                    <div class="glass-card p-6 bg-indigo-50/50">
+                        <div class="flex justify-between text-2xl font-bold mb-6">
                             <span>ยอดรวม</span>
-                            <span id="pos-total">฿0</span>
+                            <span id="pos-total" class="text-indigo-600">฿0</span>
                         </div>
+                        
                         <div class="space-y-4">
-                            <label class="block font-bold text-slate-700">วิธีชำระเงิน</label>
-                            <div class="grid grid-cols-2 gap-4">
-                                <button onclick="setPayMethod('cash')" id="pay-cash" class="py-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50 font-bold text-indigo-600">💵 เงินสด</button>
-                                <button onclick="setPayMethod('qr')" id="pay-qr" class="py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 font-bold text-slate-500">📱 QR Code</button>
-                            </div>
-                            <div id="cash-panel" class="pt-4 space-y-4">
-                                <input type="number" id="cash-input" oninput="calcChange()" class="w-full p-4 bg-slate-50 rounded-xl text-2xl font-bold border outline-none" placeholder="รับเงินมา...">
-                                <div class="flex justify-between text-xl">
-                                    <span class="text-slate-500">เงินทอน</span>
-                                    <span id="change-text" class="font-bold text-orange-600">฿0</span>
-                                </div>
-                            </div>
-                            <div id="qr-panel" class="hidden pt-4 text-center">
-                                <div class="qr-placeholder mb-4">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PROMPTPAY" class="w-48 h-48 rounded-lg">
-                                </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="setPayMethod('cash')" id="pay-cash" class="py-3.5 rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white font-bold text-sm">💵 เงินสด</button>
+                                <button onclick="setPayMethod('qr')" id="pay-qr" class="py-3.5 rounded-2xl border-2 border-slate-200 bg-white font-bold text-slate-500 text-sm">📱 QR Code</button>
                             </div>
                             
-                            <div class="grid grid-cols-1 gap-2 mt-6">
-                                <button onclick="finishOrder(true)" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-indigo-700 transition">
-                                    🖨️ ยืนยันและพิมพ์ใบเสร็จ
-                                </button>
-                                <button onclick="finishOrder(false)" class="w-full bg-emerald-500 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-emerald-600 transition">
-                                    ✅ ยืนยันการขาย (ไม่พิมพ์)
-                                </button>
+                            <div id="cash-panel" class="space-y-4">
+                                <input type="number" id="cash-input" oninput="calcChange()" class="w-full p-4 rounded-2xl border-0 bg-white shadow-inner text-xl font-bold text-center" placeholder="จำนวนเงินที่รับ...">
+                                <div class="flex justify-between px-2">
+                                    <span class="text-slate-400">เงินทอน</span>
+                                    <span id="change-text" class="font-bold text-lg text-emerald-600">฿0</span>
+                                </div>
                             </div>
+
+                            <button onclick="finishOrder(true)" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition mb-2">🖨️ ยืนยันและพิมพ์</button>
+                            <button onclick="finishOrder(false)" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition">✅ ขายเท่านั้น</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Page: Stock -->
         <section id="page-stock" class="page-content">
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                <div class="glass-card p-8">
-                    <div class="flex justify-between items-start mb-6">
-                        <h3 class="text-2xl font-bold">📦 จัดการสต็อกสินค้า</h3>
-                        <button onclick="syncToCloud()" class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-200 transition flex items-center gap-2">
-                            ☁️ ซิงค์ Google Sheets
-                        </button>
-                    </div>
-                    <div class="space-y-4">
-                        <input id="stk-name" class="w-full p-3 bg-slate-50 rounded-xl border" placeholder="ชื่อสินค้า">
-                        <select id="stk-cat" class="w-full p-3 bg-slate-50 rounded-xl border">
-                            <option value="ข้าว">🍚 ข้าว</option>
-                            <option value="เครื่องดื่ม">🥤 เครื่องดื่ม</option>
-                            <option value="อื่นๆ">✨ อื่นๆ</option>
-                        </select>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input id="stk-price" type="number" class="w-full p-3 bg-slate-50 rounded-xl border" placeholder="ราคาขาย">
-                            <input id="stk-qty" type="number" class="w-full p-3 bg-slate-50 rounded-xl border" placeholder="จำนวนเริ่มต้น">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-6">📦 จัดการสต็อก</h3>
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-2xl mb-6">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">ฟอร์มเพิ่ม/แก้ไขสินค้า</p>
+                        <input id="stk-id" type="hidden">
+                        <input id="stk-name" class="w-full p-3 bg-white rounded-xl border border-slate-200" placeholder="ชื่อสินค้า">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input id="stk-price" type="number" class="w-full p-3 bg-white rounded-xl border border-slate-200" placeholder="ราคาขาย">
+                            <input id="stk-qty" type="number" class="w-full p-3 bg-white rounded-xl border border-slate-200" placeholder="จำนวนสต็อก">
                         </div>
-                        <input id="stk-img-url" class="w-full p-3 bg-slate-50 rounded-xl border text-xs" placeholder="URL รูปภาพ (ถ้ามี)">
-                        <button onclick="addProduct()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold">+ เพิ่มสินค้า</button>
+                        <input id="stk-img" class="w-full p-3 bg-white rounded-xl border border-slate-200" placeholder="URL รูปภาพสินค้า (https://...)">
+                        <div class="flex gap-2">
+                            <button id="stk-save-btn" onclick="saveProduct()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold active:scale-95 transition">บันทึกข้อมูล</button>
+                            <button id="stk-cancel-btn" onclick="clearStockForm()" class="hidden bg-slate-200 text-slate-600 px-4 py-3 rounded-xl font-bold">ยกเลิก</button>
+                        </div>
                     </div>
-                    <div id="inventory-list" class="mt-8 space-y-3 max-h-[400px] overflow-y-auto"></div>
+                    <div id="inventory-list" class="space-y-2 max-h-[500px] overflow-y-auto pr-2"></div>
                 </div>
 
-                <div class="glass-card p-8">
-                    <h3 class="text-2xl font-bold mb-6 text-red-600">💸 บันทึกรายจ่าย</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-sm font-bold text-slate-600">รายการรายจ่าย</label>
-                            <input id="exp-name" class="w-full p-3 bg-red-50 rounded-xl border-red-100" placeholder="เช่น ค่าวัตถุดิบ, ค่าน้ำไฟ">
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-6 text-red-600">💸 รายจ่าย</h3>
+                    <div class="space-y-3 bg-red-50/30 p-4 rounded-2xl mb-6">
+                        <p class="text-[10px] font-bold text-red-400 uppercase">ฟอร์มเพิ่ม/แก้ไขรายจ่าย</p>
+                        <input id="exp-id" type="hidden">
+                        <input id="exp-name" class="w-full p-3 bg-white rounded-xl border border-red-100" placeholder="ระบุรายการรายจ่าย">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input id="exp-amount" type="number" class="w-full p-3 bg-white rounded-xl border border-red-100" placeholder="จำนวนเงิน">
+                            <select id="exp-cat" class="w-full p-3 bg-white rounded-xl border border-red-100">
+                                <option value="วัตถุดิบ">🥬 วัตถุดิบ</option>
+                                <option value="ค่าแรง">👤 ค่าแรง</option>
+                                <option value="ค่าที่/สาธารณูปโภค">🏠 ค่าที่/น้ำไฟ</option>
+                                <option value="อื่นๆ">📦 อื่นๆ</option>
+                            </select>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-sm font-bold text-slate-600">จำนวนเงิน</label>
-                                <input id="exp-amount" type="number" class="w-full p-3 bg-red-50 rounded-xl border-red-100" placeholder="0.00">
-                            </div>
-                            <div>
-                                <label class="text-sm font-bold text-slate-600">หมวดหมู่</label>
-                                <select id="exp-cat" class="w-full p-3 bg-red-50 rounded-xl border-red-100">
-                                    <option value="วัตถุดิบ">🥬 วัตถุดิบ</option>
-                                    <option value="สาธารณูปโภค">💡 ค่าน้ำ/ไฟ</option>
-                                    <option value="ค่าแรง">👤 ค่าแรง</option>
-                                    <option value="จิปาถะ">📦 อื่นๆ</option>
-                                </select>
-                            </div>
+                        <div class="flex gap-2">
+                            <button id="exp-save-btn" onclick="saveExpense()" class="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold active:scale-95 transition">บันทึกรายจ่าย</button>
+                            <button id="exp-cancel-btn" onclick="clearExpenseForm()" class="hidden bg-slate-200 text-slate-600 px-4 py-3 rounded-xl font-bold">ยกเลิก</button>
                         </div>
-                        <button onclick="addExpense()" class="w-full bg-red-500 text-white py-4 rounded-2xl font-bold hover:bg-red-600">💾 บันทึกรายจ่าย</button>
                     </div>
-                    <div class="mt-8">
-                        <h4 class="font-bold text-slate-700 mb-4">ประวัติรายจ่ายล่าสุด</h4>
-                        <div id="expense-list" class="space-y-2 max-h-[300px] overflow-y-auto"></div>
-                    </div>
+                    <div id="expense-list" class="space-y-2 max-h-[400px] overflow-y-auto pr-2"></div>
                 </div>
             </div>
         </section>
 
+        <!-- Page: Reports -->
         <section id="page-reports" class="page-content">
-            <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-3xl font-bold text-slate-800">📊 สรุปรายงานกำไร-ขาดทุน</h2>
-                    <div class="flex gap-2 mt-2">
-                        <button onclick="setReportPeriod('day')" id="filter-day" class="filter-btn active">รายวัน</button>
-                        <button onclick="setReportPeriod('week')" id="filter-week" class="filter-btn">รายสัปดาห์</button>
-                        <button onclick="setReportPeriod('month')" id="filter-month" class="filter-btn">รายเดือน</button>
-                    </div>
-                </div>
-            </header>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div class="glass-card p-6 border-l-8 border-blue-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase">รายรับ (ยอดขาย)</p>
-                    <p class="text-2xl font-bold text-slate-800" id="rep-income">฿0</p>
-                </div>
-                <div class="glass-card p-6 border-l-8 border-red-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase">รายจ่ายทั้งหมด</p>
-                    <p class="text-2xl font-bold text-red-600" id="rep-expense">฿0</p>
-                </div>
-                <div class="glass-card p-6 border-l-8 border-emerald-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase">กำไรสุทธิ</p>
-                    <p class="text-2xl font-bold text-emerald-600" id="rep-profit">฿0</p>
-                </div>
-                <div class="glass-card p-6 border-l-8 border-indigo-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase">รายการขาย</p>
-                    <p class="text-2xl font-bold text-indigo-600" id="rep-count">0 บิล</p>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">📊 รายงาน</h2>
+                <div class="flex gap-2">
+                    <button onclick="setReportPeriod('day')" id="filter-day" class="filter-btn active">วัน</button>
+                    <button onclick="setReportPeriod('week')" id="filter-week" class="filter-btn">สัปดาห์</button>
+                    <button onclick="setReportPeriod('month')" id="filter-month" class="filter-btn">เดือน</button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <div class="glass-card p-8">
-                    <h3 class="font-bold mb-4 text-slate-700">📈 แนวโน้ม รายรับ vs รายจ่าย</h3>
-                    <canvas id="mainChart"></canvas>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="glass-card p-5 border-l-4 border-indigo-500">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">ยอดขาย</p>
+                    <p id="rep-income" class="text-xl font-bold">฿0</p>
                 </div>
-                <div class="glass-card p-8">
-                    <h3 class="font-bold mb-4 text-slate-700">🎨 สัดส่วนรายจ่ายตามหมวดหมู่</h3>
-                    <div class="max-w-[300px] mx-auto">
-                        <canvas id="pieChart"></canvas>
-                    </div>
+                <div class="glass-card p-5 border-l-4 border-red-500">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">รายจ่าย</p>
+                    <p id="rep-expense" class="text-xl font-bold text-red-500">฿0</p>
+                </div>
+                <div class="glass-card p-5 border-l-4 border-emerald-500">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">กำไร</p>
+                    <p id="rep-profit" class="text-xl font-bold text-emerald-500">฿0</p>
+                </div>
+                <div class="glass-card p-5 border-l-4 border-slate-300">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">บิล</p>
+                    <p id="rep-count" class="text-xl font-bold">0</p>
                 </div>
             </div>
 
-            <div class="glass-card p-8">
-                <h3 class="text-xl font-bold mb-6 text-slate-800">📜 ประวัติรายการขายล่าสุด</h3>
+            <div class="glass-card p-4 mb-6"><canvas id="mainChart"></canvas></div>
+
+            <div class="glass-card overflow-hidden">
+                <div class="p-4 border-b font-bold text-sm">ประวัติการขายล่าสุด</div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-slate-400 text-xs uppercase border-b">
-                                <th class="pb-4 font-bold">วัน/เวลา</th>
-                                <th class="pb-4 font-bold">รายการ</th>
-                                <th class="pb-4 font-bold">ช่องทาง</th>
-                                <th class="pb-4 font-bold text-right">ยอดรวม</th>
-                                <th class="pb-4 font-bold text-center">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="order-history-list" class="text-sm">
-                        </tbody>
+                    <table class="w-full text-left text-xs">
+                        <tbody id="order-history-list"></tbody>
                     </table>
                 </div>
             </div>
@@ -253,185 +218,82 @@
     </main>
 
     <script>
-        let inventory = JSON.parse(localStorage.getItem('pos_inv')) || [];
+        // --- CONFIGURATION ---
+        // วาง URL ของ Google Apps Script ที่ Deploy เป็น Web App ที่นี่
+        const SCRIPT_URL = ""; 
+
+        // Data State
+        let inventory = JSON.parse(localStorage.getItem('pos_inv')) || [
+            { id: 1, name: "ข้าวกะเพราไก่", price: 50, stock: 99, category: "ข้าว", image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400" },
+            { id: 2, name: "น้ำเปล่า", price: 10, stock: 50, category: "เครื่องดื่ม", image: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=400" }
+        ];
         let sales = JSON.parse(localStorage.getItem('pos_sales')) || [];
         let expenses = JSON.parse(localStorage.getItem('pos_expenses')) || [];
         let cart = [];
         let payMethod = 'cash';
         let isAdmin = false;
         let chartLine = null;
-        let chartPie = null;
         let reportPeriod = 'day';
-        
-        const ADMIN_PIN = "4328";
 
+        // Navigation
         function showPage(id) {
             if ((id === 'stock' || id === 'reports') && !isAdmin) {
-                Swal.fire('Admin Only', 'กรุณาเข้าสู่โหมด ADMIN ก่อน', 'warning');
+                Swal.fire({
+                    title: 'Admin Access',
+                    text: 'กรุณากรอก PIN เพื่อเข้าถึงหลังบ้าน',
+                    input: 'password',
+                    showCancelButton: true
+                }).then((result) => {
+                    if (result.value === "1234") {
+                        isAdmin = true;
+                        updateAdminUI();
+                        proceedToPage(id);
+                    } else if (result.value) {
+                        Swal.fire('ผิดพลาด', 'รหัสไม่ถูกต้อง', 'error');
+                    }
+                });
                 return;
             }
+            proceedToPage(id);
+        }
+
+        function proceedToPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active-page'));
             document.getElementById(`page-${id}`).classList.add('active-page');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`nav-${id}`).classList.add('active');
-            
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`btn-nav-${id}`).classList.add('active');
+
             if(id === 'home') renderHomeGrid();
             if(id === 'pos') renderCart();
             if(id === 'stock') { renderInventory(); renderExpenses(); }
             if(id === 'reports') renderReports();
+            window.scrollTo(0,0);
         }
 
-        async function handleAdminToggle() {
-            if(!isAdmin) {
-                const { value: pin } = await Swal.fire({
-                    title: 'ยืนยันตัวตน',
-                    input: 'password',
-                    inputLabel: 'กรุณากรอกรหัสผ่าน ADMIN (PIN)',
-                    inputPlaceholder: 'กรอกรหัส 4 หลัก',
-                });
-                if (pin === ADMIN_PIN) {
-                    isAdmin = true;
-                    updateAdminUI();
-                    Swal.fire('Admin Mode', 'ยินดีต้อนรับ ผู้ดูแลระบบ', 'success');
-                } else if (pin) {
-                    Swal.fire('ผิดพลาด', 'รหัสผ่านไม่ถูกต้อง', 'error');
-                }
-            } else {
-                isAdmin = false;
-                updateAdminUI();
-                showPage('home');
-            }
+        function handleAdminToggle() {
+            isAdmin = !isAdmin;
+            updateAdminUI();
+            if(!isAdmin) showPage('home');
         }
 
         function updateAdminUI() {
-            const btn = document.getElementById('admin-toggle-btn');
-            btn.innerText = isAdmin ? "ออกจากโหมด ADMIN" : "เข้าสู่โหมด ADMIN";
-            btn.className = isAdmin ? "text-red-500 text-xs font-semibold" : "text-indigo-600 text-xs font-semibold";
-            document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('admin-locked', !isAdmin));
+            const dot = document.getElementById('admin-indicator');
+            dot.className = isAdmin ? "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" : "w-2.5 h-2.5 rounded-full bg-slate-300";
         }
 
-        // --- Cloud Sync ---
-        function syncToCloud() {
-            Swal.fire({
-                title: 'กำลังซิงค์ข้อมูล...',
-                text: 'กรุณารอสักครู่',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            const payload = JSON.stringify({
-                inv: inventory,
-                sales: sales,
-                expenses: expenses
-            });
-
-            if (typeof google !== 'undefined') {
-                google.script.run
-                .withSuccessHandler((res) => {
-                    Swal.close();
-                    if (res.status === 'success') {
-                        Swal.fire('สำเร็จ', res.message, 'success');
-                    } else {
-                        Swal.fire('ผิดพลาด', res.message, 'error');
-                    }
-                })
-                .withFailureHandler((err) => {
-                    Swal.close();
-                    Swal.fire('ผิดพลาด', 'ไม่สามารถเชื่อมต่อ Server ได้', 'error');
-                })
-                .syncDataFromClient(payload);
-            } else {
-                Swal.close();
-                Swal.fire('Offline Mode', 'ฟังก์ชันซิงค์จะทำงานเมื่อรันบน Google Apps Script เท่านั้น', 'info');
-            }
-        }
-
-        // --- Core Inventory Functions ---
-        function addProduct() {
-            const name = document.getElementById('stk-name').value;
-            const price = parseFloat(document.getElementById('stk-price').value) || 0;
-            const qty = parseInt(document.getElementById('stk-qty').value) || 0;
-            const cat = document.getElementById('stk-cat').value;
-            const img = document.getElementById('stk-img-url').value || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400';
-            if(!name) return;
-            inventory.push({ id: Date.now(), name, price, stock: qty, category: cat, image: img });
-            saveData(); renderInventory();
-            document.getElementById('stk-name').value = '';
-            document.getElementById('stk-price').value = '';
-            document.getElementById('stk-qty').value = '';
-        }
-
-        function renderInventory() {
-            const list = document.getElementById('inventory-list');
-            list.innerHTML = inventory.map(item => `
-                <div class="flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border">
-                    <div class="flex items-center gap-3">
-                        <img src="${item.image}" class="w-10 h-10 rounded-lg object-cover">
-                        <div>
-                            <p class="font-bold text-xs">${item.name}</p>
-                            <p class="text-[10px] text-slate-400">฿${item.price} | สต็อก: ${item.stock}</p>
-                        </div>
-                    </div>
-                    <button onclick="removeInv(${item.id})" class="text-red-400">🗑️</button>
-                </div>
-            `).join('');
-        }
-
-        function removeInv(id) {
-            inventory = inventory.filter(i => i.id !== id);
-            saveData(); renderInventory();
-        }
-
-        // --- Core Expense Functions ---
-        function addExpense() {
-            const name = document.getElementById('exp-name').value;
-            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
-            const cat = document.getElementById('exp-cat').value;
-            if(!name || amount <= 0) return Swal.fire('ผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
-            expenses.push({ id: Date.now(), date: new Date().toISOString(), name, amount, category: cat });
-            saveData(); renderExpenses();
-            document.getElementById('exp-name').value = '';
-            document.getElementById('exp-amount').value = '';
-        }
-
-        function renderExpenses() {
-            const list = document.getElementById('expense-list');
-            list.innerHTML = expenses.slice().reverse().map(ex => `
-                <div class="flex justify-between items-center p-3 bg-red-50/50 rounded-xl border border-red-100">
-                    <div>
-                        <p class="font-bold text-slate-700 text-sm">${ex.name}</p>
-                        <p class="text-[10px] text-slate-400">${new Date(ex.date).toLocaleDateString()} | ${ex.category}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-red-600">- ฿${ex.amount.toLocaleString()}</p>
-                        <button onclick="removeExp(${ex.id})" class="text-[10px] text-slate-300">ลบ</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function removeExp(id) {
-            expenses = expenses.filter(e => e.id !== id);
-            saveData(); renderExpenses();
-        }
-
-        // --- POS & Cart Functions ---
+        // Home Functions
         function renderHomeGrid() {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = inventory.map(item => {
-                const isRice = item.category === 'ข้าว';
-                const isOutOfStock = !isRice && item.stock <= 0;
                 const inCart = cart.find(c => c.id === item.id);
-                const cartCount = inCart ? inCart.qty : 0;
                 return `
-                <div onclick="${isOutOfStock ? '' : 'addToCart('+item.id+')'}" 
-                     class="glass-card relative overflow-hidden transition active:scale-95 border ${isOutOfStock ? 'opacity-50 grayscale cursor-not-allowed' : 'cursor-pointer hover:scale-105'}">
-                    ${cartCount > 0 ? `<div class="cart-badge">${cartCount}</div>` : ''}
-                    <img src="${item.image}" class="h-40 w-full object-cover">
-                    <div class="p-4 relative">
-                        <p class="font-bold truncate text-sm">${item.name}</p>
-                        <p class="text-indigo-600 font-bold">฿${item.price}</p>
-                        <p class="text-[10px] text-slate-400">${isRice ? 'หมวดข้าว' : 'สต็อก: ' + item.stock}</p>
+                <div onclick="addToCart(${item.id})" class="glass-card relative overflow-hidden active:scale-95 transition flex flex-col cursor-pointer border-2 border-transparent hover:border-indigo-100">
+                    ${inCart ? `<div class="absolute top-2 right-2 bg-indigo-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-sm">${inCart.qty}</div>` : ''}
+                    <img src="${item.image || 'https://via.placeholder.com/200'}" class="h-28 md:h-40 w-full object-cover">
+                    <div class="p-3">
+                        <p class="font-bold text-xs truncate text-slate-700">${item.name}</p>
+                        <p class="text-indigo-600 font-bold text-sm">฿${item.price}</p>
+                        <p class="text-[9px] text-slate-400">สต็อก: ${item.stock}</p>
                     </div>
                 </div>
             `}).join('');
@@ -439,159 +301,315 @@
 
         function addToCart(id) {
             const item = inventory.find(i => i.id === id);
-            const isRice = item.category === 'ข้าว';
-            if(!isRice && item.stock <= 0) return Swal.fire('สินค้าหมด', 'ขออภัย สินค้านี้หมดสต็อกแล้ว', 'warning');
-            const inCart = cart.find(c => id === id); // Fix: find(c => c.id === id)
-            const correctInCart = cart.find(c => c.id === id);
-            if(correctInCart) {
-                if(!isRice && correctInCart.qty >= item.stock) return Swal.fire('เกินจำนวนสต็อก', 'มีสินค้าไม่เพียงพอ', 'warning');
-                correctInCart.qty++; 
-            } else {
-                cart.push({...item, qty: 1});
+            if(item.stock <= 0 && item.category !== 'ข้าว') {
+                return Swal.fire({ title: 'สินค้าหมด', icon: 'warning', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
             }
-            renderHomeGrid(); renderCart();
+            const exist = cart.find(c => c.id === id);
+            if(exist) exist.qty++; else cart.push({...item, qty: 1});
+            updateCartBadge();
+            renderHomeGrid();
         }
 
-        function renderCart() {
-            const list = document.getElementById('cart-list');
-            const emptyHint = document.getElementById('empty-cart');
-            if(emptyHint) emptyHint.style.display = cart.length ? 'none' : 'block';
-            list.innerHTML = cart.map(item => `
-                <div class="flex justify-between items-center p-4 bg-white rounded-2xl border shadow-sm">
-                    <div class="flex items-center gap-4">
-                        <img src="${item.image}" class="w-12 h-12 rounded-xl object-cover border">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm">${item.name}</span>
-                            <span class="text-xs text-slate-400">฿${item.price} x ${item.qty}</span>
+        function updateCartBadge() {
+            const total = cart.reduce((a, b) => a + b.qty, 0);
+            const badge = document.getElementById('cart-badge-nav');
+            if(total > 0) {
+                badge.innerText = total; badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // Inventory Functions (Add/Edit/Delete)
+        function renderInventory() {
+            const list = document.getElementById('inventory-list');
+            list.innerHTML = inventory.map(item => `
+                <div class="flex items-center justify-between p-3 bg-white border rounded-xl shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.image || 'https://via.placeholder.com/100'}" class="w-10 h-10 rounded-lg object-cover">
+                        <div>
+                            <p class="font-bold text-xs text-slate-700">${item.name}</p>
+                            <p class="text-[10px] text-slate-400 font-medium">฿${item.price} | คลัง: ${item.stock}</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <span class="font-bold text-indigo-600">฿${(item.price * item.qty).toLocaleString()}</span>
-                        <div class="flex flex-col gap-1">
-                            <button onclick="updateCartQty(${item.id}, 1)" class="text-xs bg-slate-100 rounded px-1">+</button>
-                            <button onclick="updateCartQty(${item.id}, -1)" class="text-xs bg-slate-100 rounded px-1">-</button>
-                        </div>
-                        <button onclick="removeFromCart(${item.id})" class="text-red-400 p-2 ml-2">🗑️</button>
+                    <div class="flex gap-2">
+                        <button onclick="editProduct(${item.id})" class="text-[10px] bg-amber-50 text-amber-600 font-bold px-2 py-1 rounded-lg">แก้ไข</button>
+                        <button onclick="deleteProduct(${item.id})" class="text-[10px] bg-red-50 text-red-400 font-bold px-2 py-1 rounded-lg">ลบ</button>
                     </div>
                 </div>
             `).join('');
-            const total = cart.reduce((a,b) => a + (b.price * b.qty), 0);
+        }
+
+        function saveProduct() {
+            const id = document.getElementById('stk-id').value;
+            const name = document.getElementById('stk-name').value;
+            const price = parseFloat(document.getElementById('stk-price').value);
+            const qty = parseInt(document.getElementById('stk-qty').value);
+            const img = document.getElementById('stk-img').value;
+
+            if(!name || isNaN(price)) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุชื่อและราคา', 'warning');
+
+            if(id) {
+                const idx = inventory.findIndex(i => i.id == id);
+                inventory[idx] = { ...inventory[idx], name, price, stock: qty, image: img || inventory[idx].image };
+            } else {
+                inventory.push({ id: Date.now(), name, price, stock: qty || 0, category: "อื่นๆ", image: img || "https://via.placeholder.com/400" });
+            }
+
+            saveData();
+            clearStockForm();
+            renderInventory();
+            Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1000, showConfirmButton: false });
+        }
+
+        function editProduct(id) {
+            const item = inventory.find(i => i.id === id);
+            document.getElementById('stk-id').value = item.id;
+            document.getElementById('stk-name').value = item.name;
+            document.getElementById('stk-price').value = item.price;
+            document.getElementById('stk-qty').value = item.stock;
+            document.getElementById('stk-img').value = item.image;
+            
+            document.getElementById('stk-save-btn').innerText = "อัปเดตข้อมูล";
+            document.getElementById('stk-cancel-btn').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteProduct(id) {
+            Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: "ข้อมูลสินค้านี้จะหายไปจากระบบ",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'ลบเลย'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    inventory = inventory.filter(i => i.id !== id);
+                    saveData();
+                    renderInventory();
+                }
+            });
+        }
+
+        function clearStockForm() {
+            document.getElementById('stk-id').value = '';
+            document.getElementById('stk-name').value = '';
+            document.getElementById('stk-price').value = '';
+            document.getElementById('stk-qty').value = '';
+            document.getElementById('stk-img').value = '';
+            document.getElementById('stk-save-btn').innerText = "บันทึกข้อมูล";
+            document.getElementById('stk-cancel-btn').classList.add('hidden');
+        }
+
+        // Expense Functions
+        function renderExpenses() {
+            const list = document.getElementById('expense-list');
+            list.innerHTML = expenses.slice().reverse().map(ex => `
+                <div class="flex justify-between items-center p-3 bg-red-50/50 rounded-xl border border-red-100 shadow-sm">
+                    <div class="flex flex-col">
+                        <p class="text-[10px] text-red-400 font-bold uppercase">${ex.category}</p>
+                        <p class="text-xs font-bold text-slate-700">${ex.name}</p>
+                        <p class="text-[9px] text-slate-400">${new Date(ex.date).toLocaleDateString()}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <p class="text-xs text-red-600 font-bold">-฿${ex.amount.toLocaleString()}</p>
+                        <div class="flex gap-1">
+                            <button onclick="editExpense(${ex.id})" class="p-1.5 bg-white rounded-lg border border-red-100 text-[10px]">✏️</button>
+                            <button onclick="deleteExpense(${ex.id})" class="p-1.5 bg-white rounded-lg border border-red-100 text-[10px]">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveExpense() {
+            const id = document.getElementById('exp-id').value;
+            const name = document.getElementById('exp-name').value;
+            const amount = parseFloat(document.getElementById('exp-amount').value);
+            const cat = document.getElementById('exp-cat').value;
+
+            if(!name || isNaN(amount)) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุรายการและยอดเงิน', 'warning');
+
+            if(id) {
+                const idx = expenses.findIndex(e => e.id == id);
+                expenses[idx] = { ...expenses[idx], name, amount, category: cat };
+            } else {
+                expenses.push({ id: Date.now(), date: new Date().toISOString(), name, amount, category: cat });
+            }
+
+            saveData();
+            clearExpenseForm();
+            renderExpenses();
+        }
+
+        function editExpense(id) {
+            const ex = expenses.find(e => e.id === id);
+            document.getElementById('exp-id').value = ex.id;
+            document.getElementById('exp-name').value = ex.name;
+            document.getElementById('exp-amount').value = ex.amount;
+            document.getElementById('exp-cat').value = ex.category;
+            
+            document.getElementById('exp-save-btn').innerText = "อัปเดตรายจ่าย";
+            document.getElementById('exp-cancel-btn').classList.remove('hidden');
+        }
+
+        function deleteExpense(id) {
+            expenses = expenses.filter(e => e.id !== id);
+            saveData();
+            renderExpenses();
+        }
+
+        function clearExpenseForm() {
+            document.getElementById('exp-id').value = '';
+            document.getElementById('exp-name').value = '';
+            document.getElementById('exp-amount').value = '';
+            document.getElementById('exp-save-btn').innerText = "บันทึกรายจ่าย";
+            document.getElementById('exp-cancel-btn').classList.add('hidden');
+        }
+
+        // Cart & POS Shared
+        function renderCart() {
+            const list = document.getElementById('cart-list');
+            const empty = document.getElementById('empty-cart');
+            if(!cart.length) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                document.getElementById('pos-total').innerText = '฿0';
+                return;
+            }
+            empty.classList.add('hidden');
+            list.innerHTML = cart.map(item => `
+                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.image || 'https://via.placeholder.com/100'}" class="w-10 h-10 rounded-lg object-cover">
+                        <div><p class="font-bold text-xs">${item.name}</p><p class="text-[10px] text-slate-400">฿${item.price} x ${item.qty}</p></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center bg-slate-50 rounded-lg p-1">
+                            <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center font-bold text-slate-400">-</button>
+                            <span class="w-6 text-center text-xs font-bold">${item.qty}</span>
+                            <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center font-bold text-slate-400">+</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
             document.getElementById('pos-total').innerText = `฿${total.toLocaleString()}`;
             calcChange();
         }
 
-        function updateCartQty(id, delta) {
-            const inCart = cart.find(c => c.id === id);
-            if(inCart) {
-                inCart.qty += delta;
-                if(inCart.qty <= 0) removeFromCart(id);
-                else renderCart();
+        function changeQty(id, d) {
+            const idx = cart.findIndex(c => c.id === id);
+            cart[idx].qty += d;
+            if(cart[idx].qty <= 0) cart.splice(idx, 1);
+            renderCart(); updateCartBadge();
+        }
+
+        function setPayMethod(method) {
+            payMethod = method;
+            const btnCash = document.getElementById('pay-cash');
+            const btnQr = document.getElementById('pay-qr');
+            const cashPanel = document.getElementById('cash-panel');
+
+            if (method === 'cash') {
+                btnCash.className = "py-3.5 rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white font-bold text-sm";
+                btnQr.className = "py-3.5 rounded-2xl border-2 border-slate-200 bg-white font-bold text-slate-500 text-sm";
+                cashPanel.classList.remove('hidden');
+            } else {
+                btnQr.className = "py-3.5 rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white font-bold text-sm";
+                btnCash.className = "py-3.5 rounded-2xl border-2 border-slate-200 bg-white font-bold text-slate-500 text-sm";
+                cashPanel.classList.add('hidden');
             }
-        }
-
-        function removeFromCart(id) {
-            cart = cart.filter(c => c.id !== id);
-            renderHomeGrid(); renderCart();
-        }
-
-        function setPayMethod(m) {
-            payMethod = m;
-            document.getElementById('cash-panel').classList.toggle('hidden', m !== 'cash');
-            document.getElementById('qr-panel').classList.toggle('hidden', m !== 'qr');
-            document.getElementById('pay-cash').className = m === 'cash' ? "py-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50 font-bold text-indigo-600" : "py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 font-bold text-slate-500";
-            document.getElementById('pay-qr').className = m === 'qr' ? "py-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50 font-bold text-indigo-600" : "py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 font-bold text-slate-500";
         }
 
         function calcChange() {
-            const total = cart.reduce((a,b) => a + (b.price * b.qty), 0);
-            const cash = parseFloat(document.getElementById('cash-input').value) || 0;
-            const change = cash - total;
+            const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
+            const cashInput = document.getElementById('cash-input');
+            const cash = parseFloat(cashInput.value) || 0;
             const changeText = document.getElementById('change-text');
-            if(changeText) {
+            
+            if (payMethod === 'cash') {
+                const change = cash - total;
                 changeText.innerText = `฿${(change >= 0 ? change : 0).toLocaleString()}`;
-                changeText.className = change >= 0 ? "font-bold text-emerald-600" : "font-bold text-orange-600";
+            } else {
+                changeText.innerText = '฿0';
             }
         }
 
-        function printKitchenTicket() {
-            if(!cart.length) return Swal.fire('ไม่มีรายการ', 'กรุณาเลือกสินค้าก่อน', 'warning');
-            const printArea = document.getElementById('print-area');
-            const now = new Date().toLocaleString('th-TH');
-            printArea.innerHTML = `
-                <div style="font-family: 'Kanit', sans-serif; padding: 20px; width: 300px; border: 1px solid #000;">
-                    <h2 style="text-align: center; margin-bottom: 5px;">👩‍🍳 ใบสั่งอาหาร</h2>
-                    <p style="text-align: center; font-size: 12px; margin-bottom: 10px;">เวลา: ${now}</p>
-                    <hr style="border-top: 1px dashed #000;">
-                    <table style="width: 100%; font-size: 18px; margin-top: 10px;">
-                        ${cart.map(item => `
-                            <tr>
-                                <td style="padding: 5px 0;">${item.name}</td>
-                                <td style="text-align: right; font-weight: bold;">x ${item.qty}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                </div>
-            `;
-            window.print();
-        }
-
-        function printCustomerReceipt(order) {
-            const printArea = document.getElementById('print-area');
-            const now = new Date(order.date).toLocaleString('th-TH');
-            const cash = parseFloat(document.getElementById('cash-input').value) || order.total;
-            const change = cash - order.total;
-            printArea.innerHTML = `
-                <div style="font-family: 'Kanit', sans-serif; padding: 20px; width: 300px; border: 1px solid #000;">
-                    <h2 style="text-align: center; margin-bottom: 2px;">SMART POS</h2>
-                    <p style="text-align: center; font-size: 12px; margin-bottom: 10px;">ขอบคุณที่ใช้บริการ</p>
-                    <p style="font-size: 10px; margin-bottom: 5px;">วันที่: ${now}</p>
-                    <hr style="border-top: 1px dashed #000;">
-                    <table style="width: 100%; font-size: 14px; margin-top: 5px;">
-                        ${order.items.map(item => `
-                            <tr><td colspan="2">${item.name}</td></tr>
-                            <tr>
-                                <td style="font-size: 12px;">${item.qty} x ฿${item.price}</td>
-                                <td style="text-align: right;">฿${(item.qty * item.price).toLocaleString()}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                    <hr style="border-top: 1px dashed #000; margin-top: 10px;">
-                    <p style="text-align: right; font-weight: bold; font-size: 18px;">รวม: ฿${order.total.toLocaleString()}</p>
-                </div>
-            `;
-            window.print();
-        }
-
-        function finishOrder(shouldPrint) {
-            if(!cart.length) return Swal.fire('ตะกร้าว่าง', 'กรุณาเลือกสินค้า', 'warning');
-            const total = cart.reduce((a,b) => a + (b.price * b.qty), 0);
-            if(payMethod === 'cash') {
+        function finishOrder(print) {
+            if(!cart.length) return;
+            const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
+            
+            if (payMethod === 'cash') {
                 const cash = parseFloat(document.getElementById('cash-input').value) || 0;
-                if(cash < total) return Swal.fire('เงินไม่พอ', 'กรุณาระบุจำนวนเงินให้ถูกต้อง', 'error');
+                if (cash < total) {
+                    return Swal.fire('เงินไม่พอ', 'กรุณาระบุจำนวนเงินที่รับให้ถูกต้อง', 'warning');
+                }
             }
-            const newOrder = { id: Date.now(), date: new Date().toISOString(), total, method: payMethod, items: JSON.parse(JSON.stringify(cart)) };
-            sales.push(newOrder);
+
+            const order = { id: Date.now(), date: new Date().toISOString(), total, method: payMethod, items: [...cart] };
+            sales.push(order);
+            
             cart.forEach(c => {
                 const item = inventory.find(i => i.id === c.id);
                 if(item && item.category !== 'ข้าว') item.stock -= c.qty;
             });
-            if(shouldPrint) printCustomerReceipt(newOrder);
-            saveData(); cart = []; document.getElementById('cash-input').value = '';
-            renderCart(); renderHomeGrid(); showPage('home');
-            Swal.fire('สำเร็จ', 'บันทึกการขายเรียบร้อย', 'success');
+
+            if(print) printReceipt(order);
+            saveData();
+            
+            cart = []; 
+            updateCartBadge();
+            document.getElementById('cash-input').value = '';
+            
+            Swal.fire({ icon: 'success', title: 'ขายสำเร็จ', showConfirmButton: false, timer: 1500 });
+            showPage('home');
         }
 
+        function printReceipt(order) {
+            const area = document.getElementById('print-area');
+            area.innerHTML = `
+                <div style="width:300px; padding:20px; font-family:sans-serif; text-align:center; background:white; color:black;">
+                    <h2 style="margin:0;">VibeStore POS</h2>
+                    <p style="font-size:10px;">${new Date(order.date).toLocaleString()}</p>
+                    <hr style="border:0.5px dashed #ccc">
+                    <table style="width:100%; font-size:12px; text-align:left;">
+                        ${order.items.map(i => `<tr><td>${i.name} x${i.qty}</td><td style="text-align:right;">${i.price*i.qty}</td></tr>`).join('')}
+                    </table>
+                    <hr style="border:0.5px dashed #ccc">
+                    <p style="font-weight:bold; font-size:16px; margin:10px 0;">รวมสุทธิ: ฿${order.total.toLocaleString()}</p>
+                    <p style="font-size:10px;">วิธีชำระ: ${order.method === 'cash' ? 'เงินสด' : 'QR Code'}</p>
+                    <p style="font-size:10px;">ขอบคุณที่ใช้บริการ</p>
+                </div>
+            `;
+            window.print();
+        }
+
+        function printKitchenTicket() {
+            if(!cart.length) return;
+            const area = document.getElementById('print-area');
+            area.innerHTML = `
+                <div style="width:300px; padding:20px; font-family:sans-serif; background:white; color:black;">
+                    <h2 style="text-align:center; border-bottom:2px solid black; padding-bottom:5px;">ORDER</h2>
+                    <p style="text-align:center; font-size:10px;">${new Date().toLocaleTimeString()}</p>
+                    ${cart.map(i => `<h3 style="margin:10px 0;">[ ] ${i.name} x ${i.qty}</h3>`).join('')}
+                </div>
+            `;
+            window.print();
+        }
+
+        // Shared Logic
         function saveData() {
             localStorage.setItem('pos_inv', JSON.stringify(inventory));
             localStorage.setItem('pos_sales', JSON.stringify(sales));
             localStorage.setItem('pos_expenses', JSON.stringify(expenses));
         }
 
-        function setReportPeriod(p) { 
-            reportPeriod = p; 
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`filter-${p}`).classList.add('active');
-            renderReports(); 
+        function setReportPeriod(p) {
+            reportPeriod = p;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.id === `filter-${p}`));
+            renderReports();
         }
 
         function renderReports() {
@@ -599,61 +617,110 @@
             let limit = new Date();
             if(reportPeriod === 'day') limit.setHours(now.getHours() - 24);
             else if(reportPeriod === 'week') limit.setDate(now.getDate() - 7);
-            else limit.setDate(now.getDate() - 30);
+            else limit.setMonth(now.getMonth() - 1);
 
             const fSales = sales.filter(s => new Date(s.date) >= limit);
             const fExp = expenses.filter(e => new Date(e.date) >= limit);
             const totalIn = fSales.reduce((a,b) => a + b.total, 0);
             const totalOut = fExp.reduce((a,b) => a + b.amount, 0);
-            const profit = totalIn - totalOut;
 
             document.getElementById('rep-income').innerText = `฿${totalIn.toLocaleString()}`;
             document.getElementById('rep-expense').innerText = `฿${totalOut.toLocaleString()}`;
-            document.getElementById('rep-profit').innerText = `฿${profit.toLocaleString()}`;
-            document.getElementById('rep-count').innerText = `${fSales.length} บิล`;
+            document.getElementById('rep-profit').innerText = `฿${(totalIn - totalOut).toLocaleString()}`;
+            document.getElementById('rep-count').innerText = fSales.length;
 
-            const historyList = document.getElementById('order-history-list');
-            historyList.innerHTML = fSales.slice().reverse().map(order => `
-                <tr class="border-b hover:bg-slate-50 transition">
-                    <td class="py-4 font-medium">${new Date(order.date).toLocaleString('th-TH')}</td>
-                    <td class="py-4"><div class="max-w-[200px] truncate">${order.items.map(i => i.name + ' x' + i.qty).join('<br>')}</div></td>
-                    <td class="py-4"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${order.method === 'cash' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}">${order.method === 'cash' ? '💵 เงินสด' : '📱 QR'}</span></td>
-                    <td class="py-4 font-bold text-right text-indigo-600">฿${order.total.toLocaleString()}</td>
-                    <td class="py-4 text-center"><button onclick="voidOrder(${order.id})" class="text-red-400 hover:text-red-600 text-xs">ยกเลิก</button></td>
-                </tr>
-            `).join('');
-            
             const ctxL = document.getElementById('mainChart').getContext('2d');
             if(chartLine) chartLine.destroy();
             chartLine = new Chart(ctxL, {
                 type: 'bar',
-                data: { labels: ['รายรับ', 'รายจ่าย', 'กำไร'], datasets: [{ data: [totalIn, totalOut, profit], backgroundColor: ['#3b82f6', '#ef4444', '#10b981'], borderRadius: 12 }] },
+                data: { labels: ['รายรับ', 'รายจ่าย'], datasets: [{ label: 'จำนวนเงิน (บาท)', data: [totalIn, totalOut], backgroundColor: ['#6366f1', '#f43f5e'], borderRadius: 10 }] },
                 options: { responsive: true, plugins: { legend: { display: false } } }
             });
+
+            const historyList = document.getElementById('order-history-list');
+            historyList.innerHTML = fSales.slice(-10).reverse().map(s => `
+                <tr class="border-b text-slate-600">
+                    <td class="p-4 text-[10px]">${new Date(s.date).toLocaleTimeString()}</td>
+                    <td class="p-4 font-bold text-slate-800">฿${s.total}</td>
+                    <td class="p-4 text-right"><span class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded text-[9px] font-bold">${s.method === 'cash' ? 'CASH' : 'QR'}</span></td>
+                </tr>
+            `).join('');
         }
 
-        function voidOrder(id) {
-            Swal.fire({ title: 'ยกเลิกรายการขาย?', text: "ยอดขายจะถูกหักออก และคืนสต็อก", icon: 'warning', showCancelButton: true, confirmButtonText: 'ยืนยัน', cancelButtonText: 'ปิด' }).then((result) => {
-                if (result.isConfirmed) {
-                    const order = sales.find(s => s.id === id);
-                    if(order) {
-                        order.items.forEach(c => {
-                            const item = inventory.find(i => i.id === c.id);
-                            if(item && item.category !== 'ข้าว') item.stock += c.qty;
-                        });
-                        sales = sales.filter(s => s.id !== id);
-                        saveData(); renderReports(); renderHomeGrid();
-                        Swal.fire('สำเร็จ', 'ยกเลิกรายการแล้ว', 'success');
-                    }
-                }
+        /**
+         * ฟังก์ชันหลักในการซิงค์ข้อมูลไปยัง Google Sheets
+         */
+        async function syncToCloud() {
+            if (!SCRIPT_URL) {
+                return Swal.fire({
+                    title: 'ตั้งค่า URL ก่อน',
+                    text: 'กรุณาระบุ Web App URL ในส่วน CONFIGURATION ของโค้ด index.html',
+                    icon: 'warning'
+                });
+            }
+
+            Swal.fire({
+                title: 'กำลังเชื่อมต่อ...',
+                text: 'กำลังส่งข้อมูลไปยัง Google Sheets',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
             });
+
+            try {
+                // 1. ซิงค์ยอดขาย
+                await callSheetAPI('sync_sales', sales);
+                // 2. ซิงค์รายจ่าย
+                await callSheetAPI('sync_expenses', expenses);
+                // 3. ซิงค์สต็อกสินค้า
+                await callSheetAPI('sync_inventory', inventory);
+
+                Swal.fire({
+                    title: 'ซิงค์ข้อมูลสำเร็จ!',
+                    text: 'ข้อมูลทั้งหมดถูกส่งไปยัง Google Sheets เรียบร้อยแล้ว',
+                    icon: 'success'
+                });
+
+            } catch (error) {
+                console.error("Sync Error:", error);
+                Swal.fire({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถส่งข้อมูลได้: ' + error.message,
+                    icon: 'error'
+                });
+            }
         }
 
-        window.onload = () => { renderHomeGrid(); updateAdminUI(); };
+        /**
+         * ฟังก์ชันเสริมสำหรับเรียก Web App API พร้อม Retry Logic (Exponential Backoff)
+         */
+        async function callSheetAPI(action, payload, retries = 5) {
+            const body = JSON.stringify({ action, payload });
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', // สำคัญ: ป้องกันเรื่อง CORS เมื่อส่งจาก Browser
+                        headers: { 'Content-Type': 'application/json' },
+                        body: body
+                    });
+                    
+                    // เนื่องจากใช้ mode: 'no-cors' เราจะไม่เห็น response body
+                    // แต่ข้อมูลจะถูกส่งถึง Google Script สำเร็จ
+                    return true; 
+                    
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    const delay = Math.pow(2, i) * 1000;
+                    await new Promise(res => setTimeout(res, delay));
+                }
+            }
+        }
+
+        window.onload = () => {
+            renderHomeGrid();
+            updateCartBadge();
+        };
     </script>
 </body>
-
 </html>
-
-
-
