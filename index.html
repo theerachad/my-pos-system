@@ -220,7 +220,7 @@
     <script>
         // --- CONFIGURATION ---
         // วาง URL ของ Google Apps Script ที่ Deploy เป็น Web App ที่นี่
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZO3dCwi32rjl6OOKqsqBkcAFgJfai0qB-37JZFEmTmjONfaT6BOZlL4XpJcC1HU1cKA/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXRN2ODVY6jW8Cr2_qBXz4Ea7AZ8j96AVf_LW8WM6hS0RLb6cW2HlYRUxBXJwQ0Xq_sA/exec"; 
 
         // Data State
         let inventory = JSON.parse(localStorage.getItem('pos_inv')) || [
@@ -357,6 +357,7 @@
             }
 
             saveData();
+            syncToCloud(); // <--- เพิ่มบรรทัดนี้
             clearStockForm();
             renderInventory();
             Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1000, showConfirmButton: false });
@@ -439,6 +440,7 @@
             }
 
             saveData();
+            syncToCloud(); // <--- เพิ่มบรรทัดนี้
             clearExpenseForm();
             renderExpenses();
         }
@@ -558,6 +560,7 @@
 
             if(print) printReceipt(order);
             saveData();
+            syncToCloud(); // <--- เพิ่มบรรทัดนี้เพื่อซิงค์ยอดขายและตัดสต็อกทันที
             
             cart = []; 
             updateCartBadge();
@@ -650,43 +653,34 @@
         /**
          * ฟังก์ชันหลักในการซิงค์ข้อมูลไปยัง Google Sheets
          */
-        async function syncToCloud() {
-            if (!SCRIPT_URL) {
-                return Swal.fire({
-                    title: 'ตั้งค่า URL ก่อน',
-                    text: 'กรุณาระบุ Web App URL ในส่วน CONFIGURATION ของโค้ด index.html',
-                    icon: 'warning'
+        async function syncToCloud(showPopup = false) {
+            if (!SCRIPT_URL) return;
+        
+            if (showPopup) {
+                Swal.fire({
+                    title: 'กำลังเชื่อมต่อ...',
+                    text: 'กำลังส่งข้อมูลไปยัง Google Sheets',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
                 });
             }
-
-            Swal.fire({
-                title: 'กำลังเชื่อมต่อ...',
-                text: 'กำลังส่งข้อมูลไปยัง Google Sheets',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
+        
             try {
-                // 1. ซิงค์ยอดขาย
-                await callSheetAPI('sync_sales', sales);
-                // 2. ซิงค์รายจ่าย
-                await callSheetAPI('sync_expenses', expenses);
-                // 3. ซิงค์สต็อกสินค้า
-                await callSheetAPI('sync_inventory', inventory);
-
-                Swal.fire({
-                    title: 'ซิงค์ข้อมูลสำเร็จ!',
-                    text: 'ข้อมูลทั้งหมดถูกส่งไปยัง Google Sheets เรียบร้อยแล้ว',
-                    icon: 'success'
-                });
-
+                // ส่งข้อมูลแบบขนานเพื่อความรวดเร็ว
+                await Promise.all([
+                    callSheetAPI('sync_sales', sales),
+                    callSheetAPI('sync_expenses', expenses),
+                    callSheetAPI('sync_inventory', inventory)
+                ]);
+        
+                if (showPopup) {
+                    Swal.fire({ title: 'สำเร็จ!', icon: 'success', timer: 1000 });
+                }
             } catch (error) {
-                console.error("Sync Error:", error);
-                Swal.fire({
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถส่งข้อมูลได้: ' + error.message,
-                    icon: 'error'
-                });
+                console.error("Auto-sync failed", error);
+                if (showPopup) {
+                    Swal.fire({ title: 'เกิดข้อผิดพลาด', text: error.message, icon: 'error' });
+                }
             }
         }
 
@@ -724,6 +718,7 @@
     </script>
 </body>
 </html>
+
 
 
 
