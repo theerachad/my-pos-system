@@ -50,6 +50,9 @@
             <button onclick="syncToCloud()" class="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[10px] font-bold border border-emerald-100 active:scale-90 transition">
                 ☁️ ซิงค์ข้อมูล
             </button>
+            <button onclick="pullFromCloud()" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full text-[10px] font-bold border border-indigo-100 active:scale-90 transition">
+                🔄 อัปเดตข้อมูล
+            </button>
             <button onclick="handleAdminToggle()" id="admin-indicator" class="w-2.5 h-2.5 rounded-full bg-slate-300"></button>
         </div>
     </header>
@@ -220,7 +223,7 @@
     <script>
         // --- CONFIGURATION ---
         // วาง URL ของ Google Apps Script ที่ Deploy เป็น Web App ที่นี่
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUhNClm6vNci9sCouR2xMs7G09dns8ZT3fD09Qzggtr_vGX_YQQE5Uz_ENBlvUlOBw5A/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqh55N5UDsQgnjD4HEojSuPOHJFLbIjuuZD6UNQdB7u_2IFkJkA4HwSE9fKCYAKTu5Rg/exec"; 
 
         // Data State
         let inventory = JSON.parse(localStorage.getItem('pos_inv')) || [
@@ -683,7 +686,59 @@
                 }
             }
         }
-
+        /**
+         * ฟังก์ชันดึงข้อมูลจาก Google Sheets มาอัปเดตในเครื่อง (Two-way Sync)
+         */
+        async function pullFromCloud() {
+            if (!SCRIPT_URL) return;
+        
+            try {
+                // ใช้ fetch แบบ GET เพื่อดึงข้อมูลจาก doGet() ใน Apps Script
+                const response = await fetch(SCRIPT_URL);
+                const cloudData = await response.json();
+        
+                // 1. อัปเดตสต็อกสินค้า
+                if (cloudData.inventory && cloudData.inventory.length > 0) {
+                    inventory = cloudData.inventory.map(item => ({
+                        id: Number(item["ID"]),
+                        name: item["ชื่อสินค้า"],
+                        price: Number(item["ราคา"]),
+                        stock: Number(item["จำนวนคงเหลือ"]),
+                        // รักษารูปเดิมไว้หากใน Sheet ไม่มีคอลัมน์รูป
+                        image: inventory.find(i => i.id == item["ID"])?.image || "https://via.placeholder.com/400"
+                    }));
+                }
+        
+                // 2. อัปเดตยอดขาย
+                if (cloudData.sales) {
+                    sales = cloudData.sales.map(s => ({
+                        id: Number(s["เลขที่บิล"]),
+                        date: s["วันที่-เวลา"],
+                        total: Number(s["ยอดรวม"]),
+                        method: s["วิธีชำระ"] === "เงินสด" ? "cash" : "qr",
+                        items: [] // รายการย่อยอาจต้อง parse เพิ่มถ้าต้องการโชว์ละเอียด
+                    }));
+                }
+        
+                // 3. อัปเดตรายจ่าย
+                if (cloudData.expenses) {
+                    expenses = cloudData.expenses.map(e => ({
+                        id: Date.now() + Math.random(),
+                        date: e["วันที่"],
+                        category: e["หมวดหมู่"],
+                        name: e["รายการ"],
+                        amount: Number(e["จำนวนเงิน"])
+                    }));
+                }
+        
+                saveData(); // บันทึกลง LocalStorage ของเครื่อง
+                renderHomeGrid(); // อัปเดตหน้าเมนู
+                
+                console.log("Data pulled and synced with Google Sheets");
+            } catch (error) {
+                console.error("Pull Error:", error);
+            }
+        }
         /**
          * ฟังก์ชันเสริมสำหรับเรียก Web App API พร้อม Retry Logic (Exponential Backoff)
          */
@@ -710,14 +765,18 @@
                 }
             }
         }
-
-        window.onload = () => {
+        window.onload = async () => {
+            // ดึงข้อมูลจาก Cloud ก่อนเพื่อให้ข้อมูลหน้าเว็บตรงกับ Sheet
+            await pullFromCloud(); 
+            
+            // จากนั้นค่อยแสดงผลหน้าจอ
             renderHomeGrid();
             updateCartBadge();
         };
     </script>
 </body>
 </html>
+
 
 
 
